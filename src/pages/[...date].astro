@@ -14,14 +14,16 @@ const { date = 'latest/experimental' } = Astro.params
 const { file } = Astro.props
 
 type Token = {
-  type: 'keyword' | 'punctuation' | 'identifier' | 'string' | 'number' | 'comment' | 'whitespace' | 'method' | 'type_identifier'
+  type: 'keyword' | 'punctuation' | 'identifier' | 'string' | 'number' | 'comment' | 'whitespace' | 'method' | 'type_identifier' | 'argument'
   value: string
   id: string
+  defining: boolean
 }
 
 const tokens: Token[] = []
 const definedTypes: string[] = []
 const scope: string[] = []
+let inFunction = 0
 
 let index = 0
 
@@ -43,6 +45,22 @@ function nextNonWhitespace(): string {
   return file[nextIndex]
 }
 
+function isDefined(type: string): string | false {
+  if (definedTypes.includes(type)) {
+    return type
+  }
+  const components = type.split('.')
+  const identifier = components.pop()
+  while (components.length) {
+    const component = components.join('.')
+    if (definedTypes.includes(`${component}.${identifier}`)) {
+      return `${component}.${identifier}`
+    }
+    components.pop()
+  }
+  return definedTypes.includes(identifier) ? identifier : false
+}
+
 function consumeWord(): string {
   const initialIndex = index
   while (file[index].match(/[a-zA-Z0-9_]/)) {
@@ -54,14 +72,17 @@ function consumeWord(): string {
 
 function getScope() {
   let index = tokens.length - 1
-  while (tokens[index].type !== 'type_identifier' && tokens[index].type !== 'keyword') {
+  while (!tokens[index].defining) {
     index--
   }
   return tokens[index].value
 }
 
-function fromScope(scope: string[], word: string) {
-  return [ scope.join('.'), word ].join('.')
+function fromScope(scope: string[], word: string, type: string) {
+  //if (type === 'type_identifier') {
+  //  return word
+  //}
+  return `${scope.join('.')}.${word}`.replace(/^\./, '')
 }
 
 while (index < file.length) {
@@ -125,6 +146,11 @@ while (index < file.length) {
     } else if (char === '}') {
       scope.pop()
     }
+    if (char === '(') {
+      inFunction++
+    } else if (char === ')') {
+      inFunction--
+    }
     tokens.push({ type: 'punctuation', value: char })
     index++
     continue
@@ -135,14 +161,19 @@ while (index < file.length) {
     continue
   }
   
-  if (continuesWith(true, ['string', 'number', 'boolean', 'void', 'Promise', 'Record', 'Array', 'Map', 'Pick', 'Omit', 'any', 'unknown', 'void', 'never'])) {
+  if (continuesWith(true, ['string', 'number', 'boolean', 'void', 'Promise', 'Record', 'Array', 'Map', 'Set', 'Pick', 'Omit', 'any', 'unknown', 'void', 'never'])) {
     tokens.push({ type: 'type', value: consumeWord() })
     continue
   }
   
-  if (continuesWith(true, ['true', 'false', 'null', 'undefined', 'async', 'function', 'declare', 'import', 'export', 'from', 'namespace', 'module', 'class', 'interface', 'type', 'extends', 'static', 'readonly', 'get', 'set', 'keyof', 'typeof', 'infer'])) {
-    tokens.push({ type: 'keyword', value: consumeWord() })
-    continue
+  if (continuesWith(true, ['true', 'false', 'null', 'undefined', 'async', 'function', 'declare', 'import', 'export', 'from', 'namespace', 'module', 'abstract', 'class', 'interface', 'type', 'extends', 'static', 'readonly', 'get', 'set', 'keyof', 'typeof', 'infer'])) {
+    const word = consumeWord()
+    if (!continuesWith(['(', '<'])) {
+      tokens.push({ type: 'keyword', value: word })
+      continue
+    } else {
+      index -= word.length
+    }
   }
   
   if (continuesWith(true, ['as', 'in', 'is', 'new', 'instanceof', 'this', 'super', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'return', 'throw', 'try', 'catch', 'finally', 'with', 'debugger'])) {
@@ -153,13 +184,22 @@ while (index < file.length) {
   const word = consumeWord()
   let type = 'identifier'
   if (word) {
-    if (nextNonWhitespace() === '(') {
+    if (['(', '<'].includes(nextNonWhitespace())) {
       type = 'method'
-    } else if (word[0].match(/[A-Z]/)) {
+    }
+    if ((word[0].match(/[A-Z]/) || tokens[tokens.length - 2].value === 'typeof') && nextNonWhitespace() !== ':') {
       type = 'type_identifier'
     }
-    definedTypes.push(fromScope(scope, word))
-    tokens.push({ type, value: word, id: fromScope(scope, word) })
+    if (type === 'identifier' && inFunction > 0) {
+      type = 'argument'
+    }
+    const defining = (type === 'type_identifier' && ['type', 'interface', 'namespace', 'module', 'class', 'const', 'readonly', 'static', 'let'].includes(tokens[tokens.length - 2].value))
+    || (type === 'method')
+    || (type === 'identifier' && inFunction === 0)
+    if (defining) {
+      definedTypes.push(fromScope(scope, word, type))
+    }
+    tokens.push({ type, value: word, id: fromScope(scope, word, type), defining })
     continue
   }
   break
@@ -185,15 +225,44 @@ while (index < file.length) {
             case 'keyword':
               return <span class="text-purple-500">{token.value}</span>
             case 'identifier':
-              return <span class="text-emerald-500">{token.value}</span>
+              if (token.defining) {
+                return <a href={`#${token.id}`} id={token.id} class="underline-offset-auto font-semibold scroll-mt-24 relative target:after:content-[''] target:after:h-[calc(100%+20px)] target:after:w-[calc(100%+20px)] target:after:bg-slate-600 target:after:block target:after:z-[-1] target:after:absolute target:after:inset-0 target:after:-m-2"><span class="text-emerald-500">{token.value}</span></a>
+              } else {
+                const type = isDefined(token.id)
+                if (type) {
+                  return <a href={`#${type}`}><span class="text-emerald-500">{token.value}</span></a>
+                } else {
+                  return <span class="text-emerald-500">{token.value}</span>
+                }
+              }
+            case 'argument':
+              return <span class="text-fuchsia-500">{token.value}</span>
             case 'number':
               return <span class="text-red-500">{token.value}</span>
             case 'type':
               return <span class="text-indigo-500">{token.value}</span>
             case 'method':
-              return <span class="text-teal-500">{token.value}</span>
+              if (token.defining) {
+                return <a href={`#${token.id}`} id={token.id} class="underline-offset-auto font-semibold scroll-mt-24 relative target:after:content-[''] target:after:h-[calc(100%+20px)] target:after:w-[calc(100%+20px)] target:after:bg-slate-600 target:after:block target:after:z-[-1] target:after:absolute target:after:inset-0 target:after:-m-2"><span class="text-teal-500">{token.value}</span></a>
+              } else {
+                const type = isDefined(token.id)
+                if (type) {
+                  return <a href={`#${type}`}><span class="text-teal-500">{token.value}</span></a>
+                } else {
+                  return <span class="text-teal-500">{token.value}</span>
+                }
+              }
             case 'type_identifier':
-              return <a href={`#${token.id}`} id={token.id} class="underline-offset-auto font-semibold scroll-mt-10"><span class="text-blue-500">{token.value}</span></a>
+              if (token.defining) {
+                return <a href={`#${token.id}`} id={token.id} class="underline-offset-auto font-semibold scroll-mt-24 relative target:after:content-[''] target:after:h-[calc(100%+20px)] target:after:w-[calc(100%+20px)] target:after:bg-slate-600 target:after:block target:after:z-[-1] target:after:absolute target:after:inset-0 target:after:-m-2"><span class="text-blue-500">{token.value}</span></a>
+              } else {
+                const type = isDefined(token.id)
+                if (type) {
+                  return <a href={`#${type}`}><span class="text-blue-500">{token.value}</span></a>
+                } else {
+                  return <span class="text-blue-500">{token.value}</span>
+                }
+              }
             default:
               return <span>{token.value}</span>
           }
