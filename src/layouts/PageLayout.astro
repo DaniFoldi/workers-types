@@ -6,21 +6,14 @@ import Announcement from '~/components/widgets/Announcement.astro';
 
 import { headerData, footerData } from '~/data';
 
-import { MetaSEO } from '~/types';
-
-export interface Props {
-  meta?: MetaSEO;
-}
-
-const { meta } = Astro.props;
 ---
 
-<Layout {meta}>
-  <slot name="announcement">
+<Layout>
+  <!--<slot name="announcement">
     <Announcement />
-  </slot>
+  </slot>-->
   <slot name="header">
-    <Header {...headerData} isSticky showRssFeed showToggleTheme />
+    <Header {...headerData} isSticky showToggleTheme />
   </slot>
   <main>
     <slot />

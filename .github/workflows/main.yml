@@ -1,0 +1,57 @@
+name: Publish Workers-Types Site Workflow
+
+on:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+  schedule:
+  - cron: '25 4,12,20 * * *'
+
+concurrency:
+  group: workers-types
+  cancel-in-progress: false
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    - run: npm ci
+    - run: npm run lint
+  
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      deployments: write
+    needs:
+    - lint
+    
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        cache: npm
+        node-version: 18
+    - run: npm ci
+    - uses: actions/cache@v3
+      with:
+        key: tarballs
+        path: src/tarballs
+    - run: npm run generate
+    - run: npm run build
+    - uses: @cloudflare/pages-action@v1
+      with:
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        directory: dist
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+        projectName: workers-types

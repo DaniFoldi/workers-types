@@ -1,33 +1,21 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from 'astro/config';
 
 import tailwind from '@astrojs/tailwind';
-import sitemap from '@astrojs/sitemap';
 import image from '@astrojs/image';
 import mdx from '@astrojs/mdx';
-import partytown from '@astrojs/partytown';
 import compress from 'astro-compress';
-import { readingTimeRemarkPlugin } from './src/utils/frontmatter.mjs';
 
-import { SITE } from './src/config.mjs';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-const whenExternalScripts = (items = []) =>
-  SITE.googleAnalyticsId ? (Array.isArray(items) ? items.map((item) => item()) : [items()]) : [];
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  site: SITE.origin,
-  base: SITE.basePathname,
-  trailingSlash: SITE.trailingSlash ? 'always' : 'never',
+  site: 'https://workers-types.pages.dev',
+  base: '/',
+  trailingSlash: 'never',
 
   output: 'static',
-
-  markdown: {
-    remarkPlugins: [readingTimeRemarkPlugin],
-  },
 
   integrations: [
     tailwind({
@@ -35,17 +23,10 @@ export default defineConfig({
         applyBaseStyles: false,
       },
     }),
-    sitemap(),
     image({
       serviceEntryPoint: '@astrojs/image/sharp',
     }),
     mdx(),
-
-    ...whenExternalScripts(() =>
-      partytown({
-        config: { forward: ['dataLayer.push'] },
-      })
-    ),
 
     compress({
       css: true,
@@ -54,7 +35,7 @@ export default defineConfig({
       },
       img: false,
       js: true,
-      svg: false,
+      svg: true,
 
       logger: 1,
     }),
@@ -63,7 +44,7 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        '~': path.resolve(__dirname, './src'),
+        '~': resolve(__dirname, './src'),
       },
     },
   },

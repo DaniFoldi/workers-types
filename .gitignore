@@ -24,3 +24,6 @@ pnpm-lock.yaml
 
 .astro
 .idea
+
+src/tarballs/
+src/workers-types/

@@ -1,0 +1,202 @@
+---
+import Layout from '../layouts/CodeLayout.astro'
+import { readFile } from 'node:fs/promises'
+
+
+export async function getStaticPaths() {
+  const file = await readFile(new URL(`${import.meta.env.PROD ? '../' : ''}../../src/workers-types/4.20230404.0/package/experimental/index.d.ts`, import.meta.url), 'utf8')
+  return [
+    { params: { date: undefined }, props: { file }}
+  ]
+}
+
+const { date = 'latest/experimental' } = Astro.params
+const { file } = Astro.props
+
+type Token = {
+  type: 'keyword' | 'punctuation' | 'identifier' | 'string' | 'number' | 'comment' | 'whitespace' | 'method' | 'type_identifier'
+  value: string
+  id: string
+}
+
+const tokens: Token[] = []
+const definedTypes: string[] = []
+const scope: string[] = []
+
+let index = 0
+
+function continuesWith(value: boolean | string | string[], tokens?: string | string[]) {
+  if (typeof value === 'boolean') {
+    return tokens.some(v => continuesWith(v) && !file[index + v.length].match(/[a-zA-Z0-9_]/))
+  }
+  if (Array.isArray(value)) {
+    return value.some(v => continuesWith(v))
+  }
+  return file.slice(index, index + value.length) === value
+}
+
+function nextNonWhitespace(): string {
+  let nextIndex = index
+  while (file[nextIndex].match(/\s/)) {
+    nextIndex++
+  }
+  return file[nextIndex]
+}
+
+function consumeWord(): string {
+  const initialIndex = index
+  while (file[index].match(/[a-zA-Z0-9_]/)) {
+    index++
+  }
+  
+  return file.slice(initialIndex, index)
+}
+
+function getScope() {
+  let index = tokens.length - 1
+  while (tokens[index].type !== 'type_identifier' && tokens[index].type !== 'keyword') {
+    index--
+  }
+  return tokens[index].value
+}
+
+function fromScope(scope: string[], word: string) {
+  return [ scope.join('.'), word ].join('.')
+}
+
+while (index < file.length) {
+  const char = file[index]
+
+  if (continuesWith([' ', '\t', '\n', '\r'])) {
+    tokens.push({ type: 'whitespace', value: char })
+    index++
+    continue
+  }
+
+  if (continuesWith('//')) {
+    let value = char
+    index++
+
+    while (file[index] !== '\n') {
+      value += file[index]
+      index++
+    }
+
+    tokens.push({ type: 'comment', value })
+    continue
+  }
+
+  if (continuesWith('/*')) {
+    let value = char
+    index++
+
+    while ((file[index] !== '*' || file[index + 1] !== '/') && index < file.length - 1) {
+      value += file[index]
+      index++
+    }
+
+    value += file[index]
+    value += file[index + 1]
+    index += 2
+
+    tokens.push({ type: 'comment', value })
+    continue
+  }
+
+  if (continuesWith(['\'', '"'])) {
+    let value = char
+    index++
+
+    while (file[index] !== char) {
+      value += file[index]
+      index++
+    }
+
+    value += file[index]
+    index++
+
+    tokens.push({ type: 'string', value })
+    continue
+  }
+  
+  if (continuesWith(['(', ')', '{', '}', '[', ']', '<', '>', ',', '.', '?', ':', ';', '&', '|', '=', '+', '-', '*', '/', '%', '^', '!', '~', '@', '#', '$', '_', '`'])) {
+    if (char === '{') {
+      scope.push(getScope())
+    } else if (char === '}') {
+      scope.pop()
+    }
+    tokens.push({ type: 'punctuation', value: char })
+    index++
+    continue
+  }
+
+  if (continuesWith(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])) {
+    tokens.push({ type: 'number', value: consumeWord() })
+    continue
+  }
+  
+  if (continuesWith(true, ['string', 'number', 'boolean', 'void', 'Promise', 'Record', 'Array', 'Map', 'Pick', 'Omit', 'any', 'unknown', 'void', 'never'])) {
+    tokens.push({ type: 'type', value: consumeWord() })
+    continue
+  }
+  
+  if (continuesWith(true, ['true', 'false', 'null', 'undefined', 'async', 'function', 'declare', 'import', 'export', 'from', 'namespace', 'module', 'class', 'interface', 'type', 'extends', 'static', 'readonly', 'get', 'set', 'keyof', 'typeof', 'infer'])) {
+    tokens.push({ type: 'keyword', value: consumeWord() })
+    continue
+  }
+  
+  if (continuesWith(true, ['as', 'in', 'is', 'new', 'instanceof', 'this', 'super', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'return', 'throw', 'try', 'catch', 'finally', 'with', 'debugger'])) {
+    tokens.push({ type: 'keyword', value: consumeWord() })
+    continue
+  }
+  
+  const word = consumeWord()
+  let type = 'identifier'
+  if (word) {
+    if (nextNonWhitespace() === '(') {
+      type = 'method'
+    } else if (word[0].match(/[A-Z]/)) {
+      type = 'type_identifier'
+    }
+    definedTypes.push(fromScope(scope, word))
+    tokens.push({ type, value: word, id: fromScope(scope, word) })
+    continue
+  }
+  break
+}
+---
+
+<Layout>
+  <pre><code>{
+        tokens.map(token => {
+          switch (token.type) {
+            case 'comment':
+              if ((token.value.includes('\n') || token.value.length > 90) && (token.value.startsWith('/**') || token.value.startsWith('/*!'))) {
+                const summary = token.value.replace(/^\/*[*! ]+/, '').trimLeft().split('\n')[0]
+                return <details class="inline text-gray-500 group"><summary class="group-open:text-transparent marker:text-gray-100 ml-[-13px]">{summary}</summary>{token.value}</details>
+              }
+              return <span class="text-gray-500">{token.value}</span>
+            case 'string':
+              return <span class="text-amber-500">{token.value}</span>
+            case 'whitespace':
+              return <span>{token.value}</span>
+            case 'punctuation':
+              return <span class="text-slate-500">{token.value}</span>
+            case 'keyword':
+              return <span class="text-purple-500">{token.value}</span>
+            case 'identifier':
+              return <span class="text-emerald-500">{token.value}</span>
+            case 'number':
+              return <span class="text-red-500">{token.value}</span>
+            case 'type':
+              return <span class="text-indigo-500">{token.value}</span>
+            case 'method':
+              return <span class="text-teal-500">{token.value}</span>
+            case 'type_identifier':
+              return <a href={`#${token.id}`} id={token.id} class="underline-offset-auto font-semibold scroll-mt-10"><span class="text-blue-500">{token.value}</span></a>
+            default:
+              return <span>{token.value}</span>
+          }
+        })
+      }</code></pre>
+</Layout>
