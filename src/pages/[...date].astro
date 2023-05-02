@@ -115,10 +115,7 @@ function getScope() {
   return tokens[index].value
 }
 
-function fromScope(scope: string[], word: string, type: string) {
-  //if (type === 'type_identifier') {
-  //  return word
-  //}
+function fromScope(scope: string[], word: string) {
   return `${scope.join('.')}.${word}`.replace(/^\./, '')
 }
 
@@ -274,11 +271,11 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
         return url
       }
       
-      document.querySelector('#version').addEventListener('change', e => {
+      document.querySelector('#version').addEventListener('change', () => {
         location.assign(getRedirect())
       })
       
-      document.querySelector('#compat-date').addEventListener('change', e => {
+      document.querySelector('#compat-date').addEventListener('change', () => {
         location.assign(getRedirect())
       })
     </script>
