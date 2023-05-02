@@ -300,11 +300,11 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
               return <span class="text-purple-500">{token.value}</span>
             case 'identifier':
               if (token.defining) {
-                return <a href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-emerald-500">{token.value}</span></a>
+                return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-emerald-500">{token.value}</span></a>
               } else {
                 const type = isDefined(token.id)
                 if (type) {
-                  return <a href={`#${type}`}><span class="text-emerald-500">{token.value}</span></a>
+                  return <a tabindex="0" href={`#${type}`}><span class="text-emerald-500">{token.value}</span></a>
                 } else {
                   return <span class="text-emerald-500">{token.value}</span>
                 }
@@ -317,22 +317,22 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
               return <span class="text-indigo-500">{token.value}</span>
             case 'method':
               if (token.defining) {
-                return <a href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-teal-500">{token.value}</span></a>
+                return <a tabindex="0" ref={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-teal-500">{token.value}</span></a>
               } else {
                 const type = isDefined(token.id)
                 if (type) {
-                  return <a href={`#${type}`}><span class="text-teal-500">{token.value}</span></a>
+                  return <a tabindex="0" href={`#${type}`}><span class="text-teal-500">{token.value}</span></a>
                 } else {
                   return <span class="text-teal-500">{token.value}</span>
                 }
               }
             case 'type_identifier':
               if (token.defining) {
-                return <a href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-blue-500">{token.value}</span></a>
+                return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-blue-500">{token.value}</span></a>
               } else {
                 const type = isDefined(token.id)
                 if (type) {
-                  return <a href={`#${type}`}><span class="text-blue-500">{token.value}</span></a>
+                  return <a tabindex="0" href={`#${type}`}><span class="text-blue-500">{token.value}</span></a>
                 } else {
                   return <span class="text-blue-500">{token.value}</span>
                 }
