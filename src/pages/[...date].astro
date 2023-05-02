@@ -249,13 +249,13 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
   <div>
   <label>
     <span class="p-2">Version</span>
-    <select class="px-2 py-1" id="version">
+    <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="version">
       {availableVersions.map(version => <option value={version} selected={version.split(' ')[0] === date.split('/')[0]}>{version}</option>)}
     </select>
   </label>
   <label>
     <span class="p-2">Compatibility Date</span>
-    <select class="px-2 py-1" id="compat-date">
+    <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="compat-date">
       {dates
           .map(version => version === 'recommended' ? `recommended (${dates[dates.length - 3]})` : version)
           .map(version => <option value={version} selected={version.split(' ')[0] === date.split('/')[1]}>{version}</option>)
