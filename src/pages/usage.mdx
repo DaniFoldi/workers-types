@@ -1,0 +1,87 @@
+---
+layout: src/layouts/CodeLayout.astro
+---
+
+
+```sh
+npm i -D wrangler @cloudflare/workers-types
+npx wrangler types
+```
+
+### wrangler.toml
+
+```toml
+name = 'my-worker'
+main = 'src/index.ts'
+account_id = '1234'
+compatibility_date = '2023-05-01'
+compatibility_flags = [ 'nodejs_compat', 'web_socket_compression' ]
+workers_dev = false
+# logpush = true
+
+routes = [
+  { pattern = 'www.example.com/*', zone_name = 'example.com' },
+  { pattern = 'example.com/*', zone_name = 'example.com' }
+]
+
+# bindings
+
+# [[migrations]]
+# tag = ''
+# new_classes = []
+# renamed_classes = [{from = '', to = '' }]
+# deleted_classes = []
+```
+
+### tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "lib": [ "esnext" ],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "outDir": "./dist",
+    "preserveConstEnums": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "esnext",
+    "types": [ "@cloudflare/workers-types/2022-11-30" ]
+  },
+  "include": [
+    "src/**/*",
+    "worker-configuration.d.ts"
+  ]
+}
+```
+
+### src/index.ts
+
+```ts
+
+export default <ExportedHandler>{
+  async email(message, env, ctx) {
+    
+  },
+  async fetch(request, env, ctx) {
+    
+  },
+  async queue(batch, env, ctx) {
+    
+  },
+  async scheduled(event, env, ctx) {
+    
+  },
+  async test(controller, env, ctx) {
+    
+  },
+  async trace(traces, env, ctx) {
+    
+  }
+}
+
+```

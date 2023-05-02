@@ -9,17 +9,18 @@ export const headerData = {
       href: '/bindings'
     },
     {
+      text: 'Handlers',
+      href: '/handlers'
+    },
+    {
       text: 'APIs',
       href: '/apis'
     },
     {
-      text: 'Recommended Usage',
+      text: 'Usage',
       href: '/usage'
     },
-  ],
-  actions: [
-    { type: 'button', text: 'Source', href: 'https://github.com/danifoldi/workers-types' }
-  ],
+  ]
 };
   
 export const footerData = {

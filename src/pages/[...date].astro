@@ -1,17 +1,54 @@
 ---
 import Layout from '../layouts/CodeLayout.astro'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 
 
-export async function getStaticPaths() {
-  const file = await readFile(new URL(`${import.meta.env.PROD ? '../' : ''}../../src/workers-types/4.20230404.0/package/experimental/index.d.ts`, import.meta.url), 'utf8')
-  return [
-    { params: { date: undefined }, props: { file }}
-  ]
+export async function getStaticPaths(withFile = true): Promise<Array<{params: { date?: string}, props: { file: string }}>> {
+  async function dtsPath(version: string, date: string): Promise<string> {
+    return await readFile(new URL(`src/workers-types/${version}/package/${date}/index.d.ts`, getSrc()), 'utf8')
+  }
+  
+  function getSrc(): URL {
+    return new URL(`${import.meta.env.PROD ? '../' : ''}../../src`, import.meta.url)
+  }
+
+  const versions = await readdir(new URL('.', new URL(`src/workers-types/`, getSrc())))
+  const pairs = []
+  for (const version of versions) {
+    const dates = (await readdir(new URL(`src/workers-types/${version}/package`, getSrc()), { withFileTypes: true }))
+      .filter(dir => dir.isDirectory())
+    for (const date of dates) {
+      pairs.push({ params: { date: version + '/' + date.name }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
+      if (date.name === 'experimental') {
+        pairs.push({ params: { date: version }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
+      }
+      if (dates[dates.length - 1] === date) {
+        pairs.push({ params: { date: version }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
+      }
+    }
+    
+    if (versions[versions.length - 1] === version) {
+      pairs.push({ params: { date: undefined }, props: { file: withFile ? await dtsPath(version, 'experimental') : '' }})
+    }
+  }
+  return pairs
 }
 
-const { date = 'latest/experimental' } = Astro.params
+const { date = 'latest/recommended' } = Astro.params
 const { file } = Astro.props
+
+const types = [...new Set((await getStaticPaths(false)).map(({ params }) => params.date))]
+const availableVersions = [...new Set(types.map(version => version?.split('/')[0] ?? `latest (${types[types.length - 2].split('/')[0]})`))]
+const dates = [...new Set(types.map(version => (version ?? 'latest/recommended').split('/'))
+  .filter(version => version[0] ?? 'latest' === date.split('/')[0])
+  .map(version => version[1] ?? `recommended`))].sort((a, b) => {
+  if (a === 'oldest') return -1
+  if (b === 'oldest') return 1
+  if (a === 'recommended') return 1
+  if (b === 'recommended') return -1
+  if (a === 'experimental') return 1
+  if (b === 'experimental') return -1
+})
 
 type Token = {
   type: 'keyword' | 'punctuation' | 'identifier' | 'string' | 'number' | 'comment' | 'whitespace' | 'method' | 'type_identifier' | 'argument'
@@ -46,17 +83,17 @@ function nextNonWhitespace(): string {
 }
 
 function isDefined(type: string): string | false {
-  if (definedTypes.includes(type)) {
-    return type
-  }
   const components = type.split('.')
   const identifier = components.pop()
-  while (components.length) {
-    const component = components.join('.')
-    if (definedTypes.includes(`${component}.${identifier}`)) {
-      return `${component}.${identifier}`
+  if (definedTypes.includes(identifier)) {
+    return identifier
+  }
+  
+  for (let i = 0; i < components.length; i++) {
+    const component = components.slice(components.length - i).join('.')
+    if (definedTypes.includes(`${component}.${identifier}`.replace(/^\./, ''))) {
+      return `${component}.${identifier}`.replace(/^\./, '')
     }
-    components.pop()
   }
   return definedTypes.includes(identifier) ? identifier : false
 }
@@ -204,9 +241,49 @@ while (index < file.length) {
   }
   break
 }
+
+const targetClasses = ["font-semibold", "scroll-mt-24", "relative", 
+  "target:after:content-['']", "target:after:h-[calc(100%+20px)]", "target:after:w-[calc(100%+20px)]",
+  "target:after:border-4", "target:after:border-slate-400", "target:after:rounded-m", "target:after:opacity-50",
+  "target:after:block", "target:after:absolute", "target:after:inset-0", "target:after:-m-2"]
 ---
 
 <Layout>
+  <div>
+  <label>
+    <span class="p-2">Version</span>
+    <select class="px-2 py-1" id="version">
+      {availableVersions.map(version => <option value={version} selected={version.split(' ')[0] === date.split('/')[0]}>{version}</option>)}
+    </select>
+  </label>
+  <label>
+    <span class="p-2">Compatibility Date</span>
+    <select class="px-2 py-1" id="compat-date">
+      {dates
+          .map(version => version === 'recommended' ? `recommended (${dates[dates.length - 3]})` : version)
+          .map(version => <option value={version} selected={version.split(' ')[0] === date.split('/')[1]}>{version}</option>)
+      }
+    </select>
+  </label>
+    <script is:inline>
+      function getRedirect() {
+        const url = new URL(window.location)
+        url.pathname = [document.querySelector('#version').value.split(' ')[0].replace('latest', ''),
+          document.querySelector('#compat-date').value.split(' ')[0].replace('recommended', '')]
+          .join('/')
+        return url
+      }
+      
+      document.querySelector('#version').addEventListener('change', e => {
+        location.assign(getRedirect())
+      })
+      
+      document.querySelector('#compat-date').addEventListener('change', e => {
+        location.assign(getRedirect())
+      })
+    </script>
+    
+    </div>
   <pre><code>{
         tokens.map(token => {
           switch (token.type) {
@@ -226,7 +303,7 @@ while (index < file.length) {
               return <span class="text-purple-500">{token.value}</span>
             case 'identifier':
               if (token.defining) {
-                return <a href={`#${token.id}`} id={token.id} class="underline-offset-auto font-semibold scroll-mt-24 relative target:after:content-[''] target:after:h-[calc(100%+20px)] target:after:w-[calc(100%+20px)] target:after:bg-slate-600 target:after:block target:after:z-[-1] target:after:absolute target:after:inset-0 target:after:-m-2"><span class="text-emerald-500">{token.value}</span></a>
+                return <a href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-emerald-500">{token.value}</span></a>
               } else {
                 const type = isDefined(token.id)
                 if (type) {
@@ -243,7 +320,7 @@ while (index < file.length) {
               return <span class="text-indigo-500">{token.value}</span>
             case 'method':
               if (token.defining) {
-                return <a href={`#${token.id}`} id={token.id} class="underline-offset-auto font-semibold scroll-mt-24 relative target:after:content-[''] target:after:h-[calc(100%+20px)] target:after:w-[calc(100%+20px)] target:after:bg-slate-600 target:after:block target:after:z-[-1] target:after:absolute target:after:inset-0 target:after:-m-2"><span class="text-teal-500">{token.value}</span></a>
+                return <a href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-teal-500">{token.value}</span></a>
               } else {
                 const type = isDefined(token.id)
                 if (type) {
@@ -254,7 +331,7 @@ while (index < file.length) {
               }
             case 'type_identifier':
               if (token.defining) {
-                return <a href={`#${token.id}`} id={token.id} class="underline-offset-auto font-semibold scroll-mt-24 relative target:after:content-[''] target:after:h-[calc(100%+20px)] target:after:w-[calc(100%+20px)] target:after:bg-slate-600 target:after:block target:after:z-[-1] target:after:absolute target:after:inset-0 target:after:-m-2"><span class="text-blue-500">{token.value}</span></a>
+                return <a href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-blue-500">{token.value}</span></a>
               } else {
                 const type = isDefined(token.id)
                 if (type) {
