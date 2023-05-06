@@ -24,7 +24,7 @@ export default defineConfig({
     serviceEntryPoint: '@astrojs/image/sharp'
   }), 
     mdx(), 
-    /*compress({
+    compress({
     css: true,
     html: {
       removeAttributeQuotes: false
@@ -33,8 +33,8 @@ export default defineConfig({
     js: true,
     svg: true,
     logger: 1
-  }),*/
-    critters()],
+  }),
+   /* critters() */],
   vite: {
     resolve: {
       alias: {
