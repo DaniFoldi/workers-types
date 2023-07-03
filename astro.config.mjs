@@ -13,12 +13,13 @@ export default defineConfig({
   site: 'https://workers-types.pages.dev',
   base: '/',
   trailingSlash: 'never',
+  build: {
+		inlineStylesheets: "auto",
+	},
   output: 'static',
   integrations: [
     tailwind({
-    config: {
-      applyBaseStyles: false
-    }
+    applyBaseStyles: false
   }), 
     image({
     serviceEntryPoint: '@astrojs/image/sharp'
