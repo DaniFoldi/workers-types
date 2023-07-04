@@ -14,7 +14,7 @@ export default defineConfig({
   base: '/',
   trailingSlash: 'never',
   build: {
-		inlineStylesheets: "auto",
+		inlineStylesheets: "always",
 	},
   output: 'static',
   integrations: [
