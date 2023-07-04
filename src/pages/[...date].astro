@@ -38,7 +38,7 @@ const { date = 'latest/recommended' } = Astro.params
 const { file } = Astro.props
 
 const types = [...new Set((await getStaticPaths(false)).map(({ params }) => params.date))]
-const availableVersions = [...new Set(types.map(version => version?.split('/')[0] ?? `latest (${types[types.length - 2].split('/')[0]})`))]
+const availableVersions = [...new Set(types.map(version => version?.split('/')[0] ?? `latest (${types[types.length - 2]!.split('/')[0]})`))]
 const dates = [...new Set(types.map(version => (version ?? 'latest/recommended').split('/'))
   .filter(version => version[0] ?? 'latest' === date.split('/')[0])
   .map(version => version[1] ?? `recommended`))].sort((a, b) => {
@@ -48,6 +48,7 @@ const dates = [...new Set(types.map(version => (version ?? 'latest/recommended')
   if (b === 'recommended') return -1
   if (a === 'experimental') return 1
   if (b === 'experimental') return -1
+  return 0
 })
 
 type Token = {
@@ -250,7 +251,7 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
   <label>
     <span class="p-2">Version</span>
     <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="version">
-      {availableVersions.map(version => <option value={version} selected={version.split(' ')[0] === date.split('/')[0]}>{version}</option>)}
+      {availableVersions.map(version => <option value={version.split(' ')[0]} selected={version.split(' ')[0] === date.split('/')[0]}>{version}</option>)}
     </select>
   </label>
   <label>
@@ -258,7 +259,7 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
     <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="compat-date">
       {dates
           .map(version => version === 'recommended' ? `recommended (${dates[dates.length - 3]})` : version)
-          .map(version => <option value={version} selected={version.split(' ')[0] === date.split('/')[1]}>{version}</option>)
+          .map(version => <option value={version.split(' ')[0]} selected={version.split(' ')[0] === date.split('/')[1]}>{version}</option>)
       }
     </select>
   </label>
