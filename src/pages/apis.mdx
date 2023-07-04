@@ -6,7 +6,8 @@ layout: src/layouts/CodeLayout.astro
 
 - [`Cache`](/#Cache)
 - [`console`](/#console)
-- [`Crypto`](/#caches)
+- [`Crypto`](/#Crypto)
+- [`connect`](/#kid.connect.connect)
 - [`fetch`](/#fetch)
 - [`HTMLRewriter`](/#HTMLRewriter)
 - [`Request`](/#Request)
@@ -19,9 +20,15 @@ layout: src/layouts/CodeLayout.astro
 - [`URLSearchParams`](/#URLSearchParams)
 - [`Headers`](/#Headers)
 - [`FormData`](/#FormData)
-- [`ReadableStream`](/#ReadableStream) / [`WritableStream`](/#WritableStream) / [`TransformStream`](/#TransformStream)
 - [`WebSocket`](/#WebSocket)
 - [`AbortController`](/#AbortController)
+
+### Streams
+
+- [`ReadableStream`](/#ReadableStream) / [`WritableStream`](/#WritableStream) / [`FixedLengthStream`](/#FixedLengthStream)
+- [`TransformStream`](/#TransformStream) / [`IdentityTransformStream`](/#IdentityTransformStream)
+- [`CompressionStream`](/#CompressionStream) / [`DecompressionStream`](/#DecompressionStream)
+- [`TextEncoderStream`](/#TextEncoderStream) / [`TextDecoderStream`](/#TextDecoderStream)
 
 
 - [`atob`](/#atob) / [`btoa`](/#btoa)
@@ -34,10 +41,13 @@ layout: src/layouts/CodeLayout.astro
 - [`navigator`](/#navigator)
 
 
-### Petition for these types to be added to workers-types
+### Nodejs compatibility APIs
 
 - [`node:assert`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/assert/)
 - [`node:async_hooks`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/asynclocalstorage/)
 - [`node:buffer`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/buffer/)
 - [`node:events`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/eventemitter/)
+- [`node:path`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/path/)
+- [`node:stream`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/streams/)
+- [`node:string_decoder`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/string-decoder/)
 - [`node:util`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/util/)
