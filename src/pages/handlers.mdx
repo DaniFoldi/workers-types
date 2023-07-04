@@ -16,10 +16,11 @@ export default <ExportedHandler>{
   async scheduled(event, env, ctx) {
     
   },
-  async test(controller, env, ctx) {
+  // Renamed from trace
+  async tail(events, env, ctx) {
     
-  },
-  async trace(traces, env, ctx) {
+  }
+  async test(controller, env, ctx) {
     
   }
 }

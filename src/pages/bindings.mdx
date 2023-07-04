@@ -4,12 +4,24 @@ layout: src/layouts/CodeLayout.astro
 
 # Bindings available in Cloudflare Workers (and Pages)
 
-## Analytics Engine
+## Analytics Engine (beta)
 
 - Type: [`AnalyticsEngineDataset`](/#AnalyticsEngineDataset)
 - Docs: [Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/get-started/)
 
-## D1 Database
+## Browser Rendering (beta)
+
+- Type: [`Fetcher`](/#Fetcher)
+- Docs: [Browser Rendering](https://developers.cloudflare.com/browser-rendering)
+- Use with: [`@cloudflare/puppeteer`](https://npmjs.com/package/@cloudflare/puppeteer)
+
+## Constellation (beta)
+
+- Type: [`Fetcher`](/#Fetcher)
+- Docs: [Constellation](https://developers.cloudflare.com/constellation)
+- Use with: [`@cloudflare/constellation`](https://npmjs.com/package/@cloudflare/constellation)
+
+## D1 Database (alpha)
 
 - Type: [`D1Database`](/#D1Database)
 - Docs: [D1](https://developers.cloudflare.com/d1/platform/client-api/)
@@ -33,13 +45,14 @@ layout: src/layouts/CodeLayout.astro
 
 - Type: [`KVNamespace`](/#KVNamespace)
 - Docs: [KV](https://developers.cloudflare.com/workers/runtime-apis/kv/)
+- Recommended: [`BetterKV` from `flareutils`](https://flareutils.pages.dev)
 
 ## mTLS
 
 - Type: [`Fetcher`](/#Fetcher)
 - Docs: [mTLS](https://developers.cloudflare.com/workers/runtime-apis/mtls)
 
-## Queue
+## Queue (beta)
 
 - Type: [`Queue`](/#Queue)
 - Docs: [Queues](https://developers.cloudflare.com/queues/platform/javascript-apis/)
