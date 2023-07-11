@@ -22,9 +22,9 @@
     "@fontsource/source-code-pro": "^4.5.14",
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.9",
-    "@typescript-eslint/eslint-plugin": "^5.61.0",
-    "@typescript-eslint/parser": "^5.61.0",
-    "astro": "^2.7.3",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "astro": "^2.8.0",
     "astro-compress": "^1.1.48",
     "astro-icon": "^0.8.1",
     "eslint": "^8.44.0",
@@ -38,6 +38,6 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "astro-critters": "^1.1.38"
+    "astro-critters": "^1.1.39"
   }
 }
