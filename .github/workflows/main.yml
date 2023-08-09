@@ -45,6 +45,10 @@ jobs:
       with:
         key: tarballs
         path: src/tarballs
+    - uses: actions/cache@v3
+      with:
+        key: astro
+        path: node_modules/.astro
     - run: npm run generate
     - run: npm run build
     - uses: cloudflare/pages-action@v1
