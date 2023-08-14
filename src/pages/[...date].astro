@@ -19,11 +19,11 @@ export async function getStaticPaths(withFile = true): Promise<Array<{params: { 
       .filter(dir => dir.isDirectory())
     for (const date of dates) {
       pairs.push({ params: { date: version + '/' + date.name }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
-      if (date.name === 'experimental') {
+      /*if (date.name === 'experimental') {
         pairs.push({ params: { date: version }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
-      }
-      if (dates[dates.length - 1] === date) {
-        pairs.push({ params: { date: version }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
+      }*/
+      if (versions[versions.length - 1] === version) {
+        pairs.push({ params: { date: date.name }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
       }
     }
     
@@ -31,6 +31,7 @@ export async function getStaticPaths(withFile = true): Promise<Array<{params: { 
       pairs.push({ params: { date: undefined }, props: { file: withFile ? await dtsPath(version, 'experimental') : '' }})
     }
   }
+  console.log(pairs.map(pair => pair.params))
   return pairs
 }
 
