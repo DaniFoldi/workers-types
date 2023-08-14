@@ -13,7 +13,7 @@ export async function getStaticPaths(withFile = true): Promise<Array<{params: { 
   }
 
   const versions = await readdir(new URL('.', new URL(`src/workers-types/`, getSrc())))
-  const pairs = []
+  const pairs: Array<{ params: { date?: string }, props: { file: string } }> = []
   for (const version of versions) {
     const dates = (await readdir(new URL(`src/workers-types/${version}/package`, getSrc()), { withFileTypes: true }))
       .filter(dir => dir.isDirectory())
@@ -52,11 +52,9 @@ const dates = [...new Set(types.map(version => (version ?? 'latest/recommended')
 })
 
 type Token = {
-  type: 'keyword' | 'punctuation' | 'identifier' | 'string' | 'number' | 'comment' | 'whitespace' | 'method' | 'type_identifier' | 'argument'
+  type: 'keyword' | 'punctuation' | 'identifier' | 'string' | 'number' | 'comment' | 'whitespace' | 'method' | 'type_identifier' | 'argument' | 'type'
   value: string
-  id: string
-  defining: boolean
-}
+} & ({defining: true, id: string} | {defining?: false})
 
 const tokens: Token[] = []
 const definedTypes: string[] = []
@@ -65,9 +63,13 @@ let inFunction = 0
 
 let index = 0
 
-function continuesWith(value: boolean | string | string[], tokens?: string | string[]) {
+function continuesWith(value: boolean | string | string[], tokens?: string | string[]): boolean {
   if (typeof value === 'boolean') {
-    return tokens.some(v => continuesWith(v) && !file[index + v.length].match(/[a-zA-Z0-9_]/))
+    if (Array.isArray(tokens)) {
+      return tokens.some(v => continuesWith(v) && !file[index + v.length].match(/[a-zA-Z0-9_]/))
+    } else {
+      return tokens !== undefined && !file[index + tokens.length].match(/[a-zA-Z0-9_]/)
+    }
   }
   if (Array.isArray(value)) {
     return value.some(v => continuesWith(v))
@@ -86,7 +88,7 @@ function nextNonWhitespace(): string {
 function isDefined(type: string): string | false {
   const components = type.split('.')
   const identifier = components.pop()
-  if (definedTypes.includes(identifier)) {
+  if (identifier && definedTypes.includes(identifier)) {
     return identifier
   }
   
@@ -96,7 +98,7 @@ function isDefined(type: string): string | false {
       return `${component}.${identifier}`.replace(/^\./, '')
     }
   }
-  return definedTypes.includes(identifier) ? identifier : false
+  return identifier && definedTypes.includes(identifier) ? identifier : false
 }
 
 function consumeWord(): string {
@@ -160,7 +162,7 @@ while (index < file.length) {
   }
 
   if (continuesWith(['\'', '"'])) {
-    let value = char
+    let value: string = char
     index++
 
     while (file[index] !== char) {
@@ -217,7 +219,7 @@ while (index < file.length) {
   }
   
   const word = consumeWord()
-  let type = 'identifier'
+  let type: Token['type'] = 'identifier'
   if (word) {
     if (['(', '<'].includes(nextNonWhitespace())) {
       type = 'method'
@@ -232,9 +234,9 @@ while (index < file.length) {
     || (type === 'method')
     || (type === 'identifier' && inFunction === 0)
     if (defining) {
-      definedTypes.push(fromScope(scope, word, type))
+      definedTypes.push(fromScope(scope, word))
     }
-    tokens.push({ type, value: word, id: fromScope(scope, word, type), defining })
+    tokens.push({ type, value: word, id: fromScope(scope, word), defining })
     continue
   }
   break
@@ -303,7 +305,7 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
               if (token.defining) {
                 return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-emerald-500">{token.value}</span></a>
               } else {
-                const type = isDefined(token.id)
+                const type = isDefined('id' in token ? token.id as string : '')
                 if (type) {
                   return <a tabindex="0" href={`#${type}`}><span class="text-emerald-500">{token.value}</span></a>
                 } else {
@@ -318,9 +320,9 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
               return <span class="text-indigo-500">{token.value}</span>
             case 'method':
               if (token.defining) {
-                return <a tabindex="0" ref={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-teal-500">{token.value}</span></a>
+                return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-teal-500">{token.value}</span></a>
               } else {
-                const type = isDefined(token.id)
+                const type = isDefined('id' in token ? token.id as string : '')
                 if (type) {
                   return <a tabindex="0" href={`#${type}`}><span class="text-teal-500">{token.value}</span></a>
                 } else {
@@ -331,7 +333,7 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
               if (token.defining) {
                 return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-blue-500">{token.value}</span></a>
               } else {
-                const type = isDefined(token.id)
+                const type = isDefined('id' in token ? token.id as string : '')
                 if (type) {
                   return <a tabindex="0" href={`#${type}`}><span class="text-blue-500">{token.value}</span></a>
                 } else {
