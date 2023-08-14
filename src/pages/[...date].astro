@@ -31,7 +31,6 @@ export async function getStaticPaths(withFile = true): Promise<Array<{params: { 
       pairs.push({ params: { date: undefined }, props: { file: withFile ? await dtsPath(version, 'experimental') : '' }})
     }
   }
-  console.log(pairs.map(pair => pair.params))
   return pairs
 }
 
