@@ -1,4 +1,5 @@
 ---
+import Announcement from '~/components/widgets/Announcement.astro'
 import Layout from '../layouts/CodeLayout.astro'
 import { readFile, readdir } from 'node:fs/promises'
 
@@ -17,11 +18,11 @@ export async function getStaticPaths(withFile = true): Promise<Array<{params: { 
   for (const version of versions) {
     const dates = (await readdir(new URL(`src/workers-types/${version}/package`, getSrc()), { withFileTypes: true }))
       .filter(dir => dir.isDirectory())
+    pairs.push({ params: { date: version }, props: { file: withFile ? await dtsPath(version, 'experimental') : '' }})
+
     for (const date of dates) {
       pairs.push({ params: { date: version + '/' + date.name }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
-      /*if (date.name === 'experimental') {
-        pairs.push({ params: { date: version }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
-      }*/
+
       if (versions[versions.length - 1] === version) {
         pairs.push({ params: { date: date.name }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
       }
@@ -34,14 +35,34 @@ export async function getStaticPaths(withFile = true): Promise<Array<{params: { 
   return pairs
 }
 
-const { date = 'latest/recommended' } = Astro.params
+let { date } = Astro.params
+date = cleanDate(date)
 const { file } = Astro.props
 
-const types = [...new Set((await getStaticPaths(false)).map(({ params }) => params.date))]
-const availableVersions = [...new Set(types.map(version => version?.split('/')[0] ?? `latest (${types[types.length - 2]!.split('/')[0]})`))]
-const dates = [...new Set(types.map(version => (version ?? 'latest/recommended').split('/'))
-  .filter(version => version[0] ?? 'latest' === date.split('/')[0])
-  .map(version => version[1] ?? `recommended`))].sort((a, b) => {
+function cleanDate(date: string | undefined) {
+  if (typeof date === 'undefined') {
+    return 'latest/recommended'
+  }
+
+  if (date === 'oldest' || date === 'experimental' || date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    date = 'latest/' + date
+  }
+
+  if (!date.includes('/')) {
+    date += '/recommended'
+  }
+  return date
+}
+
+const packageVersion = date.split('/')[0]
+const compatibilityDate = date.split('/')[1]
+
+console.log(packageVersion, compatibilityDate)
+
+const availableTypes = [...new Set((await getStaticPaths(false)))].map(({params}) => params.date).map(date => typeof date === 'undefined' ? 'latest/recommended' : date)
+
+const availableVersions = [...new Set(availableTypes.map(cleanDate).map(version => version.split('/')[0]))]
+const availableDates = [...new Set(availableTypes.map(cleanDate).map(version => version.split('/')[1]))].sort((a, b) => {
   if (a === 'oldest') return -1
   if (b === 'oldest') return 1
   if (a === 'recommended') return 1
@@ -249,19 +270,23 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
 ---
 
 <Layout>
+  <Announcement></Announcement>
   <div>
   <label>
-    <span class="p-2">Version</span>
+    <span class="pr-2">Version</span>
     <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="version">
-      {availableVersions.map(version => <option value={version.split(' ')[0]} selected={version.split(' ')[0] === date.split('/')[0]}>{version}</option>)}
+      {availableVersions
+      .map(version => version === 'latest' ? `latest (${availableVersions.at(-2)})` : version)
+      .map(version => <option value={version.split(' ')[0]} selected={version.split(' ')[0] === packageVersion}>{version}</option>)
+      }
     </select>
   </label>
   <label>
     <span class="p-2">Compatibility Date</span>
     <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="compat-date">
-      {dates
-          .map(version => version === 'recommended' ? `recommended (${dates[dates.length - 3]})` : version)
-          .map(version => <option value={version.split(' ')[0]} selected={version.split(' ')[0] === date.split('/')[1]}>{version}</option>)
+      {availableDates
+          .map(version => version === 'recommended' ? `recommended (experimental)` : version)
+          .map(version => <option value={version.split(' ')[0]} selected={version.split(' ')[0] === compatibilityDate}>{version}</option>)
       }
     </select>
   </label>
@@ -270,7 +295,7 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
         const url = new URL(window.location)
         url.pathname = [document.querySelector('#version').value.split(' ')[0].replace('latest', ''),
           document.querySelector('#compat-date').value.split(' ')[0].replace('recommended', '')]
-          .join('/')
+          .join('/').replace(/\/$/, '')
         return url
       }
       
