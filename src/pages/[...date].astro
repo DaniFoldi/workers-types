@@ -295,7 +295,7 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
         const url = new URL(window.location)
         url.pathname = [document.querySelector('#version').value.split(' ')[0].replace('latest', ''),
           document.querySelector('#compat-date').value.split(' ')[0].replace('recommended', '')]
-          .join('/').replace(/\/$/, '')
+          .join('/')
         return url
       }
       
