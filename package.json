@@ -16,7 +16,7 @@
     "@astrojs/image": "^0.17.3",
     "@astrojs/mdx": "^0.19.7",
     "@astrojs/partytown": "^1.2.3",
-    "@astrojs/sitemap": "^2.0.2",
+    "@astrojs/sitemap": "^3.0.0",
     "@astrojs/tailwind": "^4.0.0",
     "@astrolib/seo": "^0.6.0",
     "@fontsource/source-code-pro": "^4.5.14",
