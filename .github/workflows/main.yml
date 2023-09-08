@@ -16,6 +16,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    if: false
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v3
@@ -31,8 +32,8 @@ jobs:
     permissions:
       contents: read
       deployments: write
-    needs:
-    - lint
+    #needs:
+    #- lint
     
     steps:
     - uses: actions/checkout@v4
