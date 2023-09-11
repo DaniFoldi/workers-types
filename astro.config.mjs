@@ -2,7 +2,6 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-import image from '@astrojs/image';
 import mdx from '@astrojs/mdx';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -18,10 +17,7 @@ export default defineConfig({
   integrations: [
     tailwind({
     applyBaseStyles: false
-  }), 
-    image({
-    serviceEntryPoint: '@astrojs/image/sharp'
-  }), 
+  }),
     mdx()],
   vite: {
     resolve: {
