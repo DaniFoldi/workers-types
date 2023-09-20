@@ -20,6 +20,6 @@ export default <KnipConfig>{
   entry: [ 'astro.config.mjs', 'src/pages/**', 'build.ts', 'src/worker/index.ts' ],
   ignore: [ '**.d.ts' ],
   compilers: {
-    astro: (text: string) => [...text.matchAll(/import[^;]+/g)].join('\n')
+    astro: (text: string) => [ ...text.matchAll(/import[^;]+/g) ].join('\n')
   }
 }

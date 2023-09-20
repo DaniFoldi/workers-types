@@ -1,7 +1,7 @@
-import { mkdir, stat } from 'node:fs/promises'
 import { createWriteStream } from 'node:fs'
-import { finished } from 'node:stream/promises'
+import { mkdir, stat } from 'node:fs/promises'
 import { Readable } from 'node:stream'
+import { finished } from 'node:stream/promises'
 import { x } from 'tar'
 
 
@@ -26,7 +26,7 @@ await Promise.allSettled(supportedVersions.map(async version => {
       .pipe(createWriteStream(`src/tarballs/${version}.tgz`, { flags: 'wx' }).on('error', console.error.bind(console)))
     await finished(download)
   }
-  
+
   await mkdir(`src/workers-types/${version}`, { recursive: true })
   await x({
     file: `src/tarballs/${version}.tgz`,
