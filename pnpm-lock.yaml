@@ -17,8 +17,8 @@ devDependencies:
     specifier: ^5.0.0
     version: 5.0.0(astro@3.0.11)(tailwindcss@3.3.3)
   '@fontsource/source-code-pro':
-    specifier: ^4.5.14
-    version: 4.5.14
+    specifier: ^5.0.8
+    version: 5.0.8
   '@tailwindcss/forms':
     specifier: ^0.5.6
     version: 0.5.6(tailwindcss@3.3.3)
@@ -872,8 +872,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@fontsource/source-code-pro@4.5.14:
-    resolution: {integrity: sha512-EWE0djE7wFCBmExWa9oT1vIp+qj5MUroVvXWb9G7Ig4t4aXDd9QDidYZzMzNemb8gQxTdOzGmhx6EZnDTFMh5Q==}
+  /@fontsource/source-code-pro@5.0.8:
+    resolution: {integrity: sha512-2RtauxYX8gMBZr3kO97M/M0jNeE2pItqTLofpJWxsIiZKY+ir8xXmxz0Bxg3XttHadjJu9lP8gQpmBKRSn0dXQ==}
     dev: true
 
   /@humanwhocodes/config-array@0.11.11:
