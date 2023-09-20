@@ -1,1 +1,8 @@
-export { default } from '@lint-my-life/eslint-config-astro/astro.js'
+import { config } from 'bundled-eslint-config'
+
+
+export default config({}, [
+  {
+    ignores: [ 'src/workers-types/**' ]
+  }
+])
