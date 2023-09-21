@@ -1,18 +1,17 @@
 ---
-import '~/assets/styles/base.css'
+import '~/assets/styles/base.css';
 
-import BasicScripts from '~/components/common/BasicScripts.astro'
+import BasicScripts from '~/components/common/BasicScripts.astro';
 
-import { SITE } from '~/config.mjs'
-import { MetaSEO } from '~/types'
-
+import { MetaSEO } from '~/types';
+import { SITE } from '~/config.mjs';
 
 export interface Props {
-  meta?: MetaSEO
+  meta?: MetaSEO;
 }
 
-const { meta = {} } = Astro.props
-const { language = 'en', textDirection = 'ltr' } = SITE
+const { meta = {} } = Astro.props;
+const { language = 'en', textDirection = 'ltr' } = SITE;
 ---
 
 <!DOCTYPE html>
@@ -21,7 +20,7 @@ const { language = 'en', textDirection = 'ltr' } = SITE
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content="Astro" />
-
+    
     <title>{meta.title}</title>
   </head>
 
