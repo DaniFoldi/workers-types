@@ -1,35 +1,35 @@
 ---
+import { readFile, readdir } from 'node:fs/promises'
 import Announcement from '~/components/widgets/Announcement.astro'
 import Layout from '../layouts/CodeLayout.astro'
-import { readFile, readdir } from 'node:fs/promises'
 
 
-export async function getStaticPaths(withFile = true): Promise<Array<{params: { date?: string}, props: { file: string }}>> {
+export async function getStaticPaths(withFile = true): Promise<Array<{params: { date?: string }, props: { file: string }}>> {
   async function dtsPath(version: string, date: string): Promise<string> {
     return await readFile(new URL(`src/workers-types/${version}/package/${date}/index.d.ts`, getSrc()), 'utf8')
   }
-  
+
   function getSrc(): URL {
     return new URL(`${import.meta.env.PROD ? '../' : ''}../../src`, import.meta.url)
   }
 
-  const versions = await readdir(new URL('.', new URL(`src/workers-types/`, getSrc())))
+  const versions = await readdir(new URL('.', new URL('src/workers-types/', getSrc())))
   const pairs: Array<{ params: { date?: string }, props: { file: string } }> = []
   for (const version of versions) {
     const dates = (await readdir(new URL(`src/workers-types/${version}/package`, getSrc()), { withFileTypes: true }))
       .filter(dir => dir.isDirectory())
-    pairs.push({ params: { date: version }, props: { file: withFile ? await dtsPath(version, 'experimental') : '' }})
+    pairs.push({ params: { date: version }, props: { file: withFile ? await dtsPath(version, 'experimental') : '' } })
 
     for (const date of dates) {
-      pairs.push({ params: { date: version + '/' + date.name }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
+      pairs.push({ params: { date: `${version}/${date.name}` }, props: { file: withFile ? await dtsPath(version, date.name) : '' } })
 
-      if (versions[versions.length - 1] === version) {
-        pairs.push({ params: { date: date.name }, props: { file: withFile ? await dtsPath(version, date.name) : '' }})
+      if (versions.at(-1) === version) {
+        pairs.push({ params: { date: date.name }, props: { file: withFile ? await dtsPath(version, date.name) : '' } })
       }
     }
-    
-    if (versions[versions.length - 1] === version) {
-      pairs.push({ params: { date: undefined }, props: { file: withFile ? await dtsPath(version, 'experimental') : '' }})
+
+    if (versions.at(-1) === version) {
+      pairs.push({ params: { date: undefined }, props: { file: withFile ? await dtsPath(version, 'experimental') : '' } })
     }
   }
   return pairs
@@ -40,12 +40,12 @@ date = cleanDate(date)
 const { file } = Astro.props
 
 function cleanDate(date: string | undefined) {
-  if (typeof date === 'undefined') {
+  if (date === undefined) {
     return 'latest/recommended'
   }
 
-  if (date === 'oldest' || date === 'experimental' || date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-    date = 'latest/' + date
+  if (date === 'oldest' || date === 'experimental' || /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    date = `latest/${date}`
   }
 
   if (!date.includes('/')) {
@@ -57,12 +57,10 @@ function cleanDate(date: string | undefined) {
 const packageVersion = date.split('/')[0]
 const compatibilityDate = date.split('/')[1]
 
-console.log(packageVersion, compatibilityDate)
+const availableTypes = [ ...new Set((await getStaticPaths(false))) ].map(({ params }) => params.date).map(date => date === undefined ? 'latest/recommended' : date)
 
-const availableTypes = [...new Set((await getStaticPaths(false)))].map(({params}) => params.date).map(date => typeof date === 'undefined' ? 'latest/recommended' : date)
-
-const availableVersions = [...new Set(availableTypes.map(cleanDate).map(version => version.split('/')[0]))]
-const availableDates = [...new Set(availableTypes.map(cleanDate).map(version => version.split('/')[1]))].sort((a, b) => {
+const availableVersions = [ ...new Set(availableTypes.map(cleanDate).map(version => version.split('/')[0])) ]
+const availableDates = [ ...new Set(availableTypes.map(cleanDate).map(version => version.split('/')[1])) ].sort((a, b) => {
   if (a === 'oldest') return -1
   if (b === 'oldest') return 1
   if (a === 'recommended') return 1
@@ -87,10 +85,10 @@ let index = 0
 function continuesWith(value: boolean | string | string[], tokens?: string | string[]): boolean {
   if (typeof value === 'boolean') {
     if (Array.isArray(tokens)) {
-      return tokens.some(v => continuesWith(v) && !file[index + v.length].match(/[a-zA-Z0-9_]/))
-    } else {
-      return tokens !== undefined && !file[index + tokens.length].match(/[a-zA-Z0-9_]/)
+      return tokens.some(v => continuesWith(v) && !/\w/.test(file[index + v.length]))
     }
+    return tokens !== undefined && !/\w/.test(file[index + tokens.length])
+
   }
   if (Array.isArray(value)) {
     return value.some(v => continuesWith(v))
@@ -100,7 +98,7 @@ function continuesWith(value: boolean | string | string[], tokens?: string | str
 
 function nextNonWhitespace(): string {
   let nextIndex = index
-  while (file[nextIndex].match(/\s/)) {
+  while (/\s/.test(file[nextIndex])) {
     nextIndex++
   }
   return file[nextIndex]
@@ -112,7 +110,7 @@ function isDefined(type: string): string | false {
   if (identifier && definedTypes.includes(identifier)) {
     return identifier
   }
-  
+
   for (let i = 0; i < components.length; i++) {
     const component = components.slice(components.length - i).join('.')
     if (definedTypes.includes(`${component}.${identifier}`.replace(/^\./, ''))) {
@@ -124,10 +122,10 @@ function isDefined(type: string): string | false {
 
 function consumeWord(): string {
   const initialIndex = index
-  while (file[index].match(/[a-zA-Z0-9_]/)) {
+  while (/\w/.test(file[index])) {
     index++
   }
-  
+
   return file.slice(initialIndex, index)
 }
 
@@ -146,7 +144,7 @@ function fromScope(scope: string[], word: string) {
 while (index < file.length) {
   const char = file[index]
 
-  if (continuesWith([' ', '\t', '\n', '\r'])) {
+  if (continuesWith([ ' ', '\t', '\n', '\r' ])) {
     tokens.push({ type: 'whitespace', value: char })
     index++
     continue
@@ -182,7 +180,7 @@ while (index < file.length) {
     continue
   }
 
-  if (continuesWith(['\'', '"'])) {
+  if (continuesWith([ '\'', '"' ])) {
     let value: string = char
     index++
 
@@ -197,8 +195,8 @@ while (index < file.length) {
     tokens.push({ type: 'string', value })
     continue
   }
-  
-  if (continuesWith(['(', ')', '{', '}', '[', ']', '<', '>', ',', '.', '?', ':', ';', '&', '|', '=', '+', '-', '*', '/', '%', '^', '!', '~', '@', '#', '$', '_', '`'])) {
+
+  if (continuesWith([ '(', ')', '{', '}', '[', ']', '<', '>', ',', '.', '?', ':', ';', '&', '|', '=', '+', '-', '*', '/', '%', '^', '!', '~', '@', '#', '$', '_', '`' ])) {
     if (char === '{') {
       scope.push(getScope())
     } else if (char === '}') {
@@ -214,44 +212,44 @@ while (index < file.length) {
     continue
   }
 
-  if (continuesWith(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])) {
+  if (continuesWith([ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ])) {
     tokens.push({ type: 'number', value: consumeWord() })
     continue
   }
-  
-  if (continuesWith(true, ['string', 'number', 'boolean', 'void', 'Promise', 'Record', 'Array', 'Map', 'Set', 'Pick', 'Omit', 'any', 'unknown', 'void', 'never'])) {
+
+  if (continuesWith(true, [ 'string', 'number', 'boolean', 'void', 'Promise', 'Record', 'Array', 'Map', 'Set', 'Pick', 'Omit', 'any', 'unknown', 'void', 'never' ])) {
     tokens.push({ type: 'type', value: consumeWord() })
     continue
   }
-  
-  if (continuesWith(true, ['true', 'false', 'null', 'undefined', 'async', 'function', 'declare', 'import', 'export', 'from', 'namespace', 'module', 'abstract', 'class', 'interface', 'type', 'extends', 'static', 'readonly', 'get', 'set', 'keyof', 'typeof', 'infer'])) {
+
+  if (continuesWith(true, [ 'true', 'false', 'null', 'undefined', 'async', 'function', 'declare', 'import', 'export', 'from', 'namespace', 'module', 'abstract', 'class', 'interface', 'type', 'extends', 'static', 'readonly', 'get', 'set', 'keyof', 'typeof', 'infer' ])) {
     const word = consumeWord()
-    if (!continuesWith(['(', '<'])) {
+    if (!continuesWith([ '(', '<' ])) {
       tokens.push({ type: 'keyword', value: word })
       continue
     } else {
       index -= word.length
     }
   }
-  
-  if (continuesWith(true, ['as', 'in', 'is', 'new', 'instanceof', 'this', 'super', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'return', 'throw', 'try', 'catch', 'finally', 'with', 'debugger'])) {
+
+  if (continuesWith(true, [ 'as', 'in', 'is', 'new', 'instanceof', 'this', 'super', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'return', 'throw', 'try', 'catch', 'finally', 'with', 'debugger' ])) {
     tokens.push({ type: 'keyword', value: consumeWord() })
     continue
   }
-  
+
   const word = consumeWord()
   let type: Token['type'] = 'identifier'
   if (word) {
-    if (['(', '<'].includes(nextNonWhitespace())) {
+    if ([ '(', '<' ].includes(nextNonWhitespace())) {
       type = 'method'
     }
-    if ((word[0].match(/[A-Z]/) || tokens[tokens.length - 2].value === 'typeof') && nextNonWhitespace() !== ':') {
+    if ((/[A-Z]/.test(word[0]) || tokens.at(-2).value === 'typeof') && nextNonWhitespace() !== ':') {
       type = 'type_identifier'
     }
     if (type === 'identifier' && inFunction > 0) {
       type = 'argument'
     }
-    const defining = (type === 'type_identifier' && ['type', 'interface', 'namespace', 'module', 'class', 'const', 'readonly', 'static', 'let'].includes(tokens[tokens.length - 2].value))
+    const defining = (type === 'type_identifier' && [ 'type', 'interface', 'namespace', 'module', 'class', 'const', 'readonly', 'static', 'let' ].includes(tokens.at(-2).value))
     || (type === 'method')
     || (type === 'identifier' && inFunction === 0)
     if (defining) {
@@ -263,33 +261,34 @@ while (index < file.length) {
   break
 }
 
-const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
-  "target:ring-offset-4", "target:ring-2", "target:ring-slate-400",
-  "target:outline-0", "target:ring-offset-gray-800"
+const targetClasses = [
+  'font-semibold', 'scroll-mt-24', 'relative',
+  'target:ring-offset-4', 'target:ring-2', 'target:ring-slate-400',
+  'target:outline-0', 'target:ring-offset-gray-800'
 ]
 ---
 
 <Layout>
   <Announcement></Announcement>
   <div>
-  <label>
-    <span class="pr-2">Version</span>
-    <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="version">
-      {availableVersions
-      .map(version => version === 'latest' ? `latest (${availableVersions.at(-2)})` : version)
-      .map(version => <option value={version.split(' ')[0]} selected={version.split(' ')[0] === packageVersion}>{version}</option>)
-      }
-    </select>
-  </label>
-  <label>
-    <span class="p-2">Compatibility Date</span>
-    <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="compat-date">
-      {availableDates
-          .map(version => version === 'recommended' ? `recommended (experimental)` : version)
+    <label>
+      <span class="pr-2">Version</span>
+      <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="version">
+        {availableVersions
+          .map(version => version === 'latest' ? `latest (${availableVersions.at(-2)})` : version)
+          .map(version => <option value={version.split(' ')[0]} selected={version.split(' ')[0] === packageVersion}>{version}</option>)
+        }
+      </select>
+    </label>
+    <label>
+      <span class="p-2">Compatibility Date</span>
+      <select class="pl-2 pr-8 py-1 rounded-md bg-slate-100 dark:bg-slate-700" id="compat-date">
+        {availableDates
+          .map(version => version === 'recommended' ? 'recommended (experimental)' : version)
           .map(version => <option value={version.split(' ')[0]} selected={version.split(' ')[0] === compatibilityDate}>{version}</option>)
-      }
-    </select>
-  </label>
+        }
+      </select>
+    </label>
     <script is:inline>
       function getRedirect() {
         const url = new URL(window.location)
@@ -298,76 +297,76 @@ const targetClasses = ["font-semibold", "scroll-mt-24", "relative",
           .join('/')
         return url
       }
-      
+
       document.querySelector('#version').addEventListener('change', () => {
         location.assign(getRedirect())
       })
-      
+
       document.querySelector('#compat-date').addEventListener('change', () => {
         location.assign(getRedirect())
       })
     </script>
-    
-    </div>
+
+  </div>
   <pre><code>{
-        tokens.map(token => {
-          switch (token.type) {
-            case 'comment':
-              if ((token.value.includes('\n') || token.value.length > 90) && (token.value.startsWith('/**') || token.value.startsWith('/*!'))) {
-                const summary = token.value.replace(/^\/*[*! ]+/, '').trimLeft().split('\n')[0]
-                return <details class="inline text-gray-500 group"><summary class="group-open:text-transparent marker:text-gray-100 ml-[-13px]">{summary}</summary>{token.value}</details>
-              }
-              return <span class="text-gray-500">{token.value}</span>
-            case 'string':
-              return <span class="text-amber-500">{token.value}</span>
-            case 'whitespace':
-              return <span>{token.value}</span>
-            case 'punctuation':
-              return <span class="text-slate-500">{token.value}</span>
-            case 'keyword':
-              return <span class="text-purple-500">{token.value}</span>
-            case 'identifier':
-              if (token.defining) {
-                return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-emerald-500">{token.value}</span></a>
-              } else {
-                const type = isDefined('id' in token ? token.id as string : '')
-                if (type) {
-                  return <a tabindex="0" href={`#${type}`}><span class="text-emerald-500">{token.value}</span></a>
-                } else {
-                  return <span class="text-emerald-500">{token.value}</span>
-                }
-              }
-            case 'argument':
-              return <span class="text-fuchsia-500">{token.value}</span>
-            case 'number':
-              return <span class="text-red-500">{token.value}</span>
-            case 'type':
-              return <span class="text-indigo-500">{token.value}</span>
-            case 'method':
-              if (token.defining) {
-                return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-teal-500">{token.value}</span></a>
-              } else {
-                const type = isDefined('id' in token ? token.id as string : '')
-                if (type) {
-                  return <a tabindex="0" href={`#${type}`}><span class="text-teal-500">{token.value}</span></a>
-                } else {
-                  return <span class="text-teal-500">{token.value}</span>
-                }
-              }
-            case 'type_identifier':
-              if (token.defining) {
-                return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-blue-500">{token.value}</span></a>
-              } else {
-                const type = isDefined('id' in token ? token.id as string : '')
-                if (type) {
-                  return <a tabindex="0" href={`#${type}`}><span class="text-blue-500">{token.value}</span></a>
-                } else {
-                  return <span class="text-blue-500">{token.value}</span>
-                }
-              }
-            default:
-              return <span>{token.value}</span>
+    tokens.map(token => {
+      switch (token.type) {
+        case 'comment':
+          if ((token.value.includes('\n') || token.value.length > 90) && (token.value.startsWith('/**') || token.value.startsWith('/*!'))) {
+            const summary = token.value.replace(/^\/*[ !*]+/, '').trimStart().split('\n')[0]
+            return <details class="inline text-gray-500 group"><summary class="group-open:text-transparent marker:text-gray-100 ml-[-13px]">{summary}</summary>{token.value}</details>
           }
-        })
-      }</code></pre>
+          return <span class="text-gray-500">{token.value}</span>
+        case 'string':
+          return <span class="text-amber-500">{token.value}</span>
+        case 'whitespace':
+          return <span>{token.value}</span>
+        case 'punctuation':
+          return <span class="text-slate-500">{token.value}</span>
+        case 'keyword':
+          return <span class="text-purple-500">{token.value}</span>
+        case 'identifier':
+          if (token.defining) {
+            return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-emerald-500">{token.value}</span></a>
+          }
+          const type = isDefined('id' in token ? token.id as string : '')
+          if (type) {
+            return <a tabindex="0" href={`#${type}`}><span class="text-emerald-500">{token.value}</span></a>
+          }
+          return <span class="text-emerald-500">{token.value}</span>
+
+
+        case 'argument':
+          return <span class="text-fuchsia-500">{token.value}</span>
+        case 'number':
+          return <span class="text-red-500">{token.value}</span>
+        case 'type':
+          return <span class="text-indigo-500">{token.value}</span>
+        case 'method':
+          if (token.defining) {
+            return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-teal-500">{token.value}</span></a>
+          } else {
+            const type = isDefined('id' in token ? token.id as string : '')
+            if (type) {
+              return <a tabindex="0" href={`#${type}`}><span class="text-teal-500">{token.value}</span></a>
+            }
+            return <span class="text-teal-500">{token.value}</span>
+
+          }
+        case 'type_identifier':
+          if (token.defining) {
+            return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-blue-500">{token.value}</span></a>
+          } else {
+            const type = isDefined('id' in token ? token.id as string : '')
+            if (type) {
+              return <a tabindex="0" href={`#${type}`}><span class="text-blue-500">{token.value}</span></a>
+            }
+            return <span class="text-blue-500">{token.value}</span>
+
+          }
+        default:
+          return <span>{token.value}</span>
+      }
+    })
+  }</code></pre>
 </Layout>
