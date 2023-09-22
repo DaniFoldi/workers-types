@@ -19,10 +19,10 @@
     "@fontsource/source-code-pro": "^4.5.14",
     "@tailwindcss/forms": "^0.5.6",
     "@tailwindcss/typography": "^0.5.10",
-    "astro": "^3.1.1",
+    "astro": "^3.1.2",
     "astro-icon": "^0.8.1",
     "bundled-eslint-config": "^0.1.4",
-    "eslint": "^8.49.0",
+    "eslint": "^8.50.0",
     "tailwindcss": "^3.3.3",
     "tar": "^6.2.0",
     "typescript": "^5.2.2"
