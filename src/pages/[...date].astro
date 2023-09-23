@@ -4,7 +4,7 @@ import Announcement from '~/components/widgets/Announcement.astro'
 import Layout from '../layouts/CodeLayout.astro'
 
 
-export async function getStaticPaths(withFile = true): Promise<Array<{params: { date?: string}; props: { file: string }}>> {
+export async function getStaticPaths(withFile = true): Promise<Array<{params: { date?: string }, props: { file: string }}>> {
   async function dtsPath(version: string, date: string): Promise<string> {
     return await readFile(new URL(`src/workers-types/${version}/package/${date}/index.d.ts`, getSrc()), 'utf8')
   }
@@ -14,7 +14,7 @@ export async function getStaticPaths(withFile = true): Promise<Array<{params: { 
   }
 
   const versions = await readdir(new URL('.', new URL('src/workers-types/', getSrc())))
-  const pairs: Array<{ params: { date?: string }; props: { file: string } }> = []
+  const pairs: Array<{ params: { date?: string }, props: { file: string } }> = []
   for (const version of versions) {
     const dates = (await readdir(new URL(`src/workers-types/${version}/package`, getSrc()), { withFileTypes: true }))
       .filter(dir => dir.isDirectory())
@@ -49,15 +49,13 @@ function cleanDate(date: string | undefined) {
   }
 
   if (!date.includes('/')) {
-    date += '/2023-07-01'
+    date += '/recommended'
   }
   return date
 }
 
 const packageVersion = date.split('/')[0]
 const compatibilityDate = date.split('/')[1]
-
-console.log(packageVersion, compatibilityDate)
 
 const availableTypes = [ ...new Set((await getStaticPaths(false))) ].map(({ params }) => params.date).map(date => date === undefined ? 'latest/recommended' : date)
 
@@ -75,7 +73,7 @@ const availableDates = [ ...new Set(availableTypes.map(cleanDate).map(version =>
 type Token = {
   type: 'keyword' | 'punctuation' | 'identifier' | 'string' | 'number' | 'comment' | 'whitespace' | 'method' | 'type_identifier' | 'argument' | 'type'
   value: string
-} & ({defining: true; id: string} | {defining?: false})
+} & ({defining: true, id: string} | {defining?: false})
 
 const tokens: Token[] = []
 const definedTypes: string[] = []
@@ -327,7 +325,7 @@ const targetClasses = [
           return <span class="text-slate-500">{token.value}</span>
         case 'keyword':
           return <span class="text-purple-500">{token.value}</span>
-        case 'identifier': {
+        case 'identifier':
           if (token.defining) {
             return <a tabindex="0" href={`#${token.id}`} id={token.id} class:list={targetClasses}><span class="text-emerald-500">{token.value}</span></a>
           }
@@ -336,7 +334,7 @@ const targetClasses = [
             return <a tabindex="0" href={`#${type}`}><span class="text-emerald-500">{token.value}</span></a>
           }
           return <span class="text-emerald-500">{token.value}</span>
-        }
+
 
         case 'argument':
           return <span class="text-fuchsia-500">{token.value}</span>
