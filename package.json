@@ -14,20 +14,20 @@
   },
   "type": "module",
   "devDependencies": {
-    "@astrojs/mdx": "^1.1.3",
+    "@astrojs/mdx": "^1.1.4",
     "@astrojs/tailwind": "^5.0.2",
     "@fontsource/source-code-pro": "^5.0.15",
     "@tailwindcss/forms": "^0.5.6",
     "@tailwindcss/typography": "^0.5.10",
-    "astro": "^3.3.4",
+    "astro": "^3.5.0",
     "astro-icon": "^0.8.1",
-    "bundled-eslint-config": "^0.2.9",
-    "eslint": "^8.52.0",
+    "bundled-eslint-config": "^0.2.12",
+    "eslint": "^8.53.0",
     "tailwindcss": "^3.3.5",
     "tar": "^6.2.0",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "knip": "^2.38.1"
+    "knip": "^2.40.2"
   }
 }
