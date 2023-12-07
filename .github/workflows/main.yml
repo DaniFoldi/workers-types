@@ -18,11 +18,11 @@ jobs:
     timeout-minutes: 5
     if: false
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
     - uses: pnpm/action-setup@v2
       with:
         version: 8
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4
       with:
         cache: pnpm
         node-version: 20
@@ -40,26 +40,26 @@ jobs:
     #- lint
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
     - uses: pnpm/action-setup@v2
       with:
         version: 8
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4
       with:
         cache: pnpm
         node-version: 20
     - run: pnpm install
-    - uses: actions/cache@v3
+    - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
       with:
         key: tarballs
         path: src/tarballs
-    - uses: actions/cache@v3
+    - uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3
       with:
         key: astro
         path: node_modules/.astro
     - run: pnpm generate
     - run: pnpm build
-    - uses: cloudflare/pages-action@v1
+    - uses: cloudflare/pages-action@f0a1cd58cd66095dee69bfa18fa5efd1dde93bca # v1
       with:
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
