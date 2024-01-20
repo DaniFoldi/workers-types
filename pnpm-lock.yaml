@@ -6,7 +6,7 @@ settings:
 
 dependencies:
   knip:
-    specifier: ^3.13.0
+    specifier: ^3.13.2
     version: 3.13.2(@types/node@20.10.3)(typescript@5.3.3)
 
 devDependencies:
