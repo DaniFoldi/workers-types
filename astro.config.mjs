@@ -22,7 +22,12 @@ export default defineConfig({
       applyBaseStyles: false
     }),
     mdx(),
-    icon()
+    icon({
+      include: {
+        'simple-icons': ['*'],
+        tabler: ['*']
+      }
+    })
   ],
   vite: {
     resolve: {

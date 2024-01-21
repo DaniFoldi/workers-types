@@ -3,8 +3,9 @@ import { readFile, readdir } from 'node:fs/promises'
 import Announcement from '~/components/widgets/Announcement.astro'
 import Layout from '../layouts/CodeLayout.astro'
 
+type Paths = Array<{params: { date?: string }; props: { file: string }}>
 
-export async function getStaticPaths(withFile = true): Promise<Array<{params: { date?: string }; props: { file: string }}>> {
+export async function getStaticPaths(withFile = true): Promise<Paths> {
   async function dtsPath(version: string, date: string): Promise<string> {
     return await readFile(new URL(`src/workers-types/${version}/package/${date}/index.d.ts`, getSrc()), 'utf8')
   }
