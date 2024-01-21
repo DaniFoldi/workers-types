@@ -1,5 +1,5 @@
 ---
-import { Icon } from 'astro-icon'
+import { Icon } from 'astro-icon/components'
 
 
 export interface Props {
@@ -19,5 +19,5 @@ const {
 ---
 
 <button type="button" class:list={className} aria-label={label} data-aw-toggle-menu>
-  <Icon name={iconName} class:list={iconClass} optimize={false} />
+  <Icon name={iconName} class:list={iconClass} />
 </button>

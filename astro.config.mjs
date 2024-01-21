@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import mdx from '@astrojs/mdx'
 import tailwind from '@astrojs/tailwind'
 import { defineConfig } from 'astro/config'
+import icon from 'astro-icon'
 
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -11,7 +12,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   site: 'https://workers-types.pages.dev',
   base: '/',
-  trailingSlash: 'never',
+  trailingSlash: 'always',
   build: {
     inlineStylesheets: 'always'
   },
@@ -20,7 +21,8 @@ export default defineConfig({
     tailwind({
       applyBaseStyles: false
     }),
-    mdx()
+    mdx(),
+    icon()
   ],
   vite: {
     resolve: {
