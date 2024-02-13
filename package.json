@@ -27,7 +27,7 @@
     "astro-icon": "^1.0.2",
     "bundled-eslint-config": "^0.2.19",
     "eslint": "^8.56.0",
-    "knip": "^4.1.0",
+    "knip": "^5.0.0",
     "simple-knip-config": "^0.2.1",
     "tailwindcss": "^3.4.1",
     "tar": "^6.2.0",
