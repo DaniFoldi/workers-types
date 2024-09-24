@@ -11,7 +11,7 @@ export async function getStaticPaths(withFile = true): Promise<Paths> {
   }
 
   function getSrc(): URL {
-    return new URL(`${import.meta.env.PROD ? '../' : ''}../../src`, import.meta.url)
+    return new URL(`../../src`, import.meta.url)
   }
 
   const versions = await readdir(new URL('.', new URL('src/workers-types/', getSrc())))
