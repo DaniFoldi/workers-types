@@ -286,11 +286,17 @@ while (index < file.length) {
 const targetClasses = [
   'font-semibold', 'scroll-mt-24', 'relative',
   'target:ring-offset-4', 'target:ring-2', 'target:ring-slate-400',
-  'target:outline-0', 'target:ring-offset-gray-800'
+  'target:outline-0', 'target:ring-offset-gray-800',
+  'content-visibility-auto'
 ]
 ---
 
 <Layout>
+  <style is:raw>
+    span {
+        content-visibility: auto;
+    }
+  </style>
   <Announcement></Announcement>
   <div>
     <label>
