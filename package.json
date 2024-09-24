@@ -28,7 +28,7 @@
     "bundled-eslint-config": "^0.4.20",
     "eslint": "^9.11.0",
     "knip": "^5.30.2",
-    "simple-knip-config": "^0.2.1",
+    "simple-knip-config": "^0.2.4",
     "tailwindcss": "^3.4.12",
     "tar": "^7.4.3",
     "typescript": "^5.6.2"
