@@ -15,23 +15,23 @@
   "type": "module",
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^3.1.7",
-    "@astrojs/tailwind": "^5.1.1",
+    "@astrojs/mdx": "^3.1.8",
+    "@astrojs/tailwind": "^5.1.2",
     "@fontsource/source-code-pro": "^5.1.0",
-    "@iconify-json/simple-icons": "^1.2.5",
-    "@iconify-json/tabler": "^1.2.4",
+    "@iconify-json/simple-icons": "^1.2.9",
+    "@iconify-json/tabler": "^1.2.6",
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/typography": "^0.5.15",
     "@types/tar": "^6.1.13",
-    "astro": "^4.15.10",
+    "astro": "^4.16.7",
     "astro-icon": "^1.1.1",
     "bundled-eslint-config": "^0.4.20",
-    "eslint": "^9.11.1",
-    "knip": "^5.31.0",
+    "eslint": "^9.13.0",
+    "knip": "^5.34.0",
     "simple-knip-config": "^0.2.4",
-    "tailwindcss": "^3.4.13",
+    "tailwindcss": "^3.4.14",
     "tar": "^7.4.3",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   },
   "packageManager": "pnpm@9.12.2"
 }
