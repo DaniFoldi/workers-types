@@ -15,7 +15,7 @@
   "type": "module",
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^3.1.8",
+    "@astrojs/mdx": "^4.0.1",
     "@astrojs/tailwind": "^5.1.2",
     "@fontsource/source-code-pro": "^5.1.0",
     "@iconify-json/simple-icons": "^1.2.10",
@@ -23,7 +23,7 @@
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/typography": "^0.5.15",
     "@types/tar": "^6.1.13",
-    "astro": "^4.16.7",
+    "astro": "^5.0.3",
     "astro-icon": "^1.1.1",
     "bundled-eslint-config": "^0.4.25",
     "eslint": "^9.13.0",
