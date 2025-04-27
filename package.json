@@ -25,7 +25,7 @@
     "@types/tar": "^6.1.13",
     "astro": "^4.16.7",
     "astro-icon": "^1.1.5",
-    "bundled-eslint-config": "^0.4.25",
+    "bundled-eslint-config": "^0.5.19",
     "eslint": "^9.24.0",
     "knip": "^5.47.0",
     "simple-knip-config": "^0.2.4",
