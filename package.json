@@ -15,8 +15,8 @@
   "type": "module",
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^3.1.9",
-    "@astrojs/tailwind": "^5.1.5",
+    "@astrojs/mdx": "^4.2.6",
+    "@astrojs/tailwind": "^6.0.2",
     "@fontsource/source-code-pro": "^5.2.5",
     "@iconify-json/simple-icons": "^1.2.30",
     "@iconify-json/tabler": "^1.2.17",
